@@ -23,7 +23,7 @@ def procesaEjemplos(archivo):
     ejemplos = []
     conjuntoEdadAProcesar = []
     edadMediaTotal = 0.0
-    with open(archivo,'r') as csv_file:
+    with open(archivo,'r', encoding='utf-8') as csv_file:
         reader = csv.reader(csv_file)
         for line in reader:
             if line[0] == "row.names":
@@ -75,7 +75,8 @@ titanic.py con el formato usado en el resto de conjuntos de datos'''
 def generadorTitanic(archivo):
     ejemplos = procesaEjemplos(archivo)
     conjuntos = generadorConjuntos(ejemplos)
-    f = open('titanic.py','w')
+    f = open('titanic.py','w', encoding='utf-8')
+    f.write("# -*- coding: utf-8 -*-\n")
     f.write("atributos = [('clase',['1st','2nd','3rd']),('edad',['niño','adulto']),('genero',['male','female'])]\nclasificacion = 'Supervivencia'\nclases = ['1','0']\n")
     f.write("entrenamiento = "+str(conjuntos[0])+"\n")
     f.write("validacion = "+str(conjuntos[1])+"\n")
