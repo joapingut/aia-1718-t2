@@ -10,8 +10,8 @@ como límite de edad 13 para mayores y menores de edad, 0 para menores de 13 y
 1 para mayores de 13) y con el género como atributos, y como clase la supervivencia'''
                 
 
-'''La función procesaEjemplos tiene como parámetro de entrada el archivo titanic.csv
-que tiene los datos separados por comas, este formato permite una mejor manipulación
+'''La función procesaEjemplos tiene como parámetro de entrada el archivo titanic.txt
+que tiene los datos separados por comas (csv), este formato permite una mejor manipulación
 de los datos respecto a texto. Se guardan los ejemplos cuyas edades no sean desconocidas
 (es decir, que no sean NA) en el resultado final y los ejemplos restantes (con edad = NA)
 se guardan en una colección aparte para luego cambiar dichos valores por el valor
