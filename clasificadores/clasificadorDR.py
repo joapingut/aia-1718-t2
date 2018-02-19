@@ -2,7 +2,7 @@
 
 from clasificadores.clasificador import Clasificador, ClasificadorNoEntrenado
 from clasificadores.utils import proporcionClase
-import math
+import math, operator
 
 '''ClasificadorDT es subclase de Clasificador, a lo que se añade
 un campo entrenado que indica si el entrenamiento se ha realizado,
@@ -37,7 +37,29 @@ class ClasificadorDR(Clasificador):
         else:
             return ClasificadorNoEntrenado(Exception)
 
+class ReglaDR():
+
+    def __init__(self, categoria):
+        self.categoria = categoria
+        self.reglas = []
+
+    def addRule(self, atributo):
+        self.reglas.append(atributo)
+
+    def getRules(self):
+        return self.reglas
+
+    def getCategoria(self):
+        return self.categoria
+
 def entrenador (entrenaminto):
+    proporciones = proporcionClase(entrenaminto, True)
+    clases_ord =  sorted(proporciones.items(), key=operator.itemgetter(1), reverse=True)
+    examples = None;
+    actual = []
+    rule =[]
+    while actual.count() is not 0:
+        None
     None
 
 def clasificador(ejemplo, reglas):
