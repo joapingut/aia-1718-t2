@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from ClasificadorDT import clasificador, evaluador, imprimir
-from utils import Clasificador, NodoDT, ClasificadorNoEntrenado
+from clasificadores.clasificadorDT import clasificador, evaluador, imprimir
+from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
 
 '''ClasificadorDTPoda es subclase de Clasificador, a lo que se añade
 un campo entrenado que indica si el entrenamiento se ha realizado,

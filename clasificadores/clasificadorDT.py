@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from utils import Clasificador, NodoDT, ClasificadorNoEntrenado
+from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
 import math
 
 '''ClasificadorDT es subclase de Clasificador, a lo que se añade

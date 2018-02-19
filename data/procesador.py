@@ -72,10 +72,15 @@ def generadorConjuntos(ejemplos):
 '''generadorTitanic hace uso de las funciones previamente implementadas y genera el archivo
 titanic.py con el formato usado en el resto de conjuntos de datos'''
 
-def generadorTitanic(archivo):
+def generadorTitanic(archivo, path=None):
     ejemplos = procesaEjemplos(archivo)
     conjuntos = generadorConjuntos(ejemplos)
-    f = open('titanic.py','w', encoding='utf-8')
+    dst = None
+    if(path is not None):
+        dst = path + 'titanic.py'
+    else:
+        dst = 'titanic.py'
+    f = open(dst,'w', encoding='utf-8')
     f.write("# -*- coding: utf-8 -*-\n")
     f.write("atributos = [('clase',['1st','2nd','3rd']),('edad',['niño','adulto']),('genero',['male','female'])]\nclasificacion = 'Supervivencia'\nclases = ['1','0']\n")
     f.write("entrenamiento = "+str(conjuntos[0])+"\n")
