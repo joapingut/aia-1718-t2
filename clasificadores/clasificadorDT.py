@@ -18,7 +18,7 @@ class ClasificadorDT(Clasificador):
         self.medida = medida
         self.maxima_frecuencia = maxima_frecuencia
         self.minimo_ejemplos = minimo_ejemplos
-        self.arbol = entrenador(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos)
+        self.arbol = entrenador(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.atributos)
         self.entrenado = True
     
     def clasifica(self, ejemplo):
@@ -45,17 +45,18 @@ medida que entre como entrada.'''
 
 def medidas(medida, conjunto):
     result = 0.0
-    proporcionClases = proporcionClase(conjunto)
-    
     if medida=="entropia":
+        proporcionClases = proporcionClase(conjunto,True)
         for p in proporcionClases:
             result = result + proporcionClases[p]*math.log2(proporcionClases[p])
         result = -result
         
     elif medida=="error":
+        proporcionClases = proporcionClase(conjunto)
         result = 1 - proporcionClases[max(proporcionClases, key=proporcionClases.get)] / len(conjunto)
     
     elif medida=="gini":
+        proporcionClases = proporcionClase(conjunto,True)
         for p in proporcionClases:
             result = result + proporcionClases[p]*proporcionClases[p]
         result = 1 - result
@@ -69,14 +70,22 @@ de salida: {'1st': 193, '2nd': 168, '3rd': 422}. Al igual que
 en proporcionClase, si porcentaje=True, se devuelven los valores
 respecto al número total de ejemplos.'''
 
-def proporcionEjemplo(conjunto, indice=0, porcentaje=False):
+def proporcionEjemplo(conjunto, indice=0, valorAtributo=None, porcentaje=False):
     proporcion = dict()
-    for x in conjunto:
-        valor = x[indice]
-        if valor not in proporcion.keys():
-            proporcion[valor] = 1
-        else:
-            proporcion[valor] += 1
+    if valorAtributo == None:
+        for x in conjunto:
+            valor = x[indice]
+            if valor not in proporcion.keys():
+                proporcion[valor] = 1
+            else:
+                proporcion[valor] += 1
+    else:
+        for x in conjunto:
+            valor = x[indice]
+            if valor == valorAtributo and valor not in proporcion.keys():
+                proporcion[valor] = 1
+            elif valor == valorAtributo:
+                proporcion[valor] += 1
     if porcentaje:
         for x in proporcion:
             proporcion[x] = proporcion[x]/len(conjunto)
@@ -147,9 +156,16 @@ def imprimir(arbol,profundidad=0):
 
 
 
-def entrenador(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0):
+def entrenador(conjunto, medida, maxFrecuencia, minEjemplos, atributos):
     
-    
+    for atributo in atributos:
+        nombreAtributo = atributo[0]
+        valoresAtributo = atributo[1]
+        indices = indiceAtributo(atributos)
+        for valor in valoresAtributo:
+            
+            medidaValor = medidas(medida,conjunto)
+        
     proporcionClases = proporcionClase(conjunto,True)
     proporcionEjemplos = proporcionEjemplo(conjunto,True)
     #if(max(proporcionClase(conjunto,True))
