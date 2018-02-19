@@ -21,3 +21,15 @@ def proporcionClase(conjunto, porcentaje=False):
         for x in proporcion:
             proporcion[x] = proporcion[x]/len(conjunto)
     return proporcion
+
+'''La función ejemplosClase devuelve un subconjunto de
+ejemplos en los que aparece el valor de clasificación
+que se pasa como parámetro de entrada.'''
+
+def ejemplosClase(conjunto, clase):
+    ejemplosClase = []
+    for x in conjunto:
+        claseX = x[len(x)-1]
+        if clase == claseX:
+            ejemplosClase.append(x)
+    return ejemplosClase

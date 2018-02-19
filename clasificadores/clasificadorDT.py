@@ -148,7 +148,8 @@ def imprimir(arbol,profundidad=0):
 
 
 def entrenador(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0):
-    None
+    
+    
     proporcionClases = proporcionClase(conjunto,True)
     proporcionEjemplos = proporcionEjemplo(conjunto,True)
     #if(max(proporcionClase(conjunto,True))
