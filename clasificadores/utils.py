@@ -33,3 +33,15 @@ def ejemplosClase(conjunto, clase):
         if clase == claseX:
             ejemplosClase.append(x)
     return ejemplosClase
+
+'''La función subconjuntosValorAtributo devuelve un nuevo
+subconjunto del conjunto de entrada en el que esté presente
+el valor de entrada para un atributo concreto (que se determina
+a partir del índice)'''
+
+def subconjuntoValorAtributo(conjunto, indice=0, valor=None):
+    subconjunto = []
+    for x in conjunto:
+        if x[indice] == valor:
+            subconjunto.append(x)
+    return subconjunto

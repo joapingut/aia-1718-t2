@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
-from clasificadores.utils import proporcionClase
+from clasificadores.utils import proporcionClase, subconjuntoValorAtributo
 import math
 
 '''ClasificadorDT es subclase de Clasificador, a lo que se añade
@@ -18,7 +18,7 @@ class ClasificadorDT(Clasificador):
         self.medida = medida
         self.maxima_frecuencia = maxima_frecuencia
         self.minimo_ejemplos = minimo_ejemplos
-        self.arbol = entrenador(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos)
+        self.arbol = entrenador(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.atributos)
         self.entrenado = True
     
     def clasifica(self, ejemplo):
@@ -45,17 +45,18 @@ medida que entre como entrada.'''
 
 def medidas(medida, conjunto):
     result = 0.0
-    proporcionClases = proporcionClase(conjunto)
-    
     if medida=="entropia":
+        proporcionClases = proporcionClase(conjunto,True)
         for p in proporcionClases:
             result = result + proporcionClases[p]*math.log2(proporcionClases[p])
         result = -result
         
     elif medida=="error":
+        proporcionClases = proporcionClase(conjunto)
         result = 1 - proporcionClases[max(proporcionClases, key=proporcionClases.get)] / len(conjunto)
     
     elif medida=="gini":
+        proporcionClases = proporcionClase(conjunto,True)
         for p in proporcionClases:
             result = result + proporcionClases[p]*proporcionClases[p]
         result = 1 - result
@@ -69,29 +70,36 @@ de salida: {'1st': 193, '2nd': 168, '3rd': 422}. Al igual que
 en proporcionClase, si porcentaje=True, se devuelven los valores
 respecto al número total de ejemplos.'''
 
-def proporcionEjemplo(conjunto, indice=0, porcentaje=False):
+def proporcionEjemplo(conjunto, indice=0, valorAtributo=None, porcentaje=False):
     proporcion = dict()
-    for x in conjunto:
-        valor = x[indice]
-        if valor not in proporcion.keys():
-            proporcion[valor] = 1
-        else:
-            proporcion[valor] += 1
+    if valorAtributo == None:
+        for x in conjunto:
+            valor = x[indice]
+            if valor not in proporcion.keys():
+                proporcion[valor] = 1
+            else:
+                proporcion[valor] += 1
+    else:
+        for x in conjunto:
+            valor = x[indice]
+            if valor == valorAtributo and valor not in proporcion.keys():
+                proporcion[valor] = 1
+            elif valor == valorAtributo:
+                proporcion[valor] += 1
     if porcentaje:
         for x in proporcion:
             proporcion[x] = proporcion[x]/len(conjunto)
     return proporcion
 
-'''indiceAtributo devuelve una lista con todos los atributos
-ordenados por el mismo orden que en los atributos con sus posibles
-valores, de manera que, para una entrada tal que: 
+'''indiceAtributo devuelve un diccionario con todos los atributos
+como clave y su posición en la lista como valor, para una entrada tal que: 
 [('clase',['1st','2nd','3rd']),('edad',['niño','adulto']),('genero',['male','female'])],
-el resultado sería ['clase', 'edad', 'genero'].'''
+el resultado sería {'clase': 0, 'edad': 1, 'genero': 2}.'''
 
 def indiceAtributo(atributos):
-    indices = []
+    indices = dict()
     for atributo in atributos:
-        indices.append(atributo[0])
+        indices[atributo[0]] = atributos.index(atributo)
     return indices
 
 '''La función clasificador recibe un ejemplo como parámetro de entrada
@@ -128,7 +136,7 @@ def evaluador(prueba,arbol):
             aciertos += 1
     return aciertos/len(prueba)
 
-'''La función imprimir devuelve una representación del árbol que
+'''La función imprimirRec devuelve una representación del árbol que
 se pasa como parámetro de entrada a partir de los distintos subárboles
 de sus ramas y la profundidad en el árbol. Se representa el valor de 
 cada nivel de profundidad y el valor del atributo por cada rama, además
@@ -136,23 +144,62 @@ de una indentación que depende de la profundidad para una representación
 más clara de las ramas. Si el nodo que se trata no tiene ramas, es un nodo
 hoja y se representa el valor de clasificación.'''
 
-def imprimir(arbol,profundidad=0):
+def imprimirRec(arbol,profundidad):
     resultado = ""
     if arbol.ramas != None:
         for rama in arbol.ramas:
-            resultado += "\t"*profundidad+str(profundidad)+": "+rama+"\n"+imprimir(arbol.ramas[rama],profundidad+1)
+            resultado += "\t"*profundidad+str(profundidad)+": "+str(rama)+"\n"+imprimirRec(arbol.ramas[rama],profundidad+1)
     else:
-        resultado = "\t"*profundidad+str(profundidad)+": "+arbol.clase+"\n"
+        resultado = "\t"*profundidad+str(profundidad)+": ["+arbol.clase+"]\n"
     return resultado
 
+'''La función imprimir llama a imprimirRec, genera la cadena del árbol
+y la imprime.'''
 
+def imprimir(arbol,profundidad=0):
+    arbolRes = imprimirRec(arbol,profundidad)
+    print(arbolRes)
 
-def entrenador(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0):
-    
-    
-    proporcionClases = proporcionClase(conjunto,True)
-    proporcionEjemplos = proporcionEjemplo(conjunto,True)
-    #if(max(proporcionClase(conjunto,True))
-    
-    
-    
+'''La función entrenador desarrolla el árbol de manera recursiva llamando
+a la propia función variando el conjunto de entrada, y los atributos por
+cada iteración. Para los casos en los que se trata de un nodo hoja, se realiza
+una comprobación de la proporción de clases (si para el conjunto de entrada el
+valor de clasificación es el mismo para todos los casos), de los atributos (si
+no quedan más que estudiar) o si el conjunto de entrada es vacío (por lo que la
+variable atributoElegido valdría None y se crearía un nodo hoja). En cualquier
+otro caso, se trata de un nodo interior y se trata cada valor de los atributos
+de entrada y se observa el mejor valor dependiendo de la medida, cogiendo el mínimo.
+Es en ese bucle donde se realiza la comprobación de la máxima frecuencia y el mínimo
+de ejemplos, en la cual si se cumple alguna, no se elige el atributo candidato'''
+
+def entrenador(conjunto, medida, maxFrecuencia, minEjemplos, atributos, indices=None):
+    if indices == None:
+        indices = indiceAtributo(atributos)
+    valorMin = 100.0
+    atributosCopia = list(atributos)
+    proporcionClases = proporcionClase(conjunto)
+    atributoElegido = None
+    if len(proporcionClases) == 1 or indices == {} or atributosCopia == []:
+        arbol = NodoDT(None,proporcionClases,None,max(proporcionClases,key=proporcionClases.get))
+    else:
+        ramas = dict()
+        for atributo in atributosCopia:
+            nombreAtributo = atributo[0]
+            valoresAtributo = atributo[1]
+            medidaValor = 0.0
+            for valor in valoresAtributo:
+                subconjunto = subconjuntoValorAtributo(conjunto,indices[nombreAtributo],valor)
+                medidaValor = medidaValor + medidas(medida,subconjunto)
+                medidaValor = medidaValor*len(subconjunto)/len(conjunto)
+                proporcionClaseSub = proporcionClase(subconjunto,True)
+                if medidaValor <= valorMin and proporcionClaseSub[max(proporcionClaseSub,key=proporcionClaseSub.get)] <= maxFrecuencia and len(subconjunto)/len(conjunto) >= minEjemplos:
+                    atributoElegido = atributo
+                    valorMin = medidaValor
+        if atributoElegido == None:
+            arbol = NodoDT(None,proporcionClases,None,max(proporcionClases,key=proporcionClases.get))
+        else:
+            atributosCopia.remove(atributoElegido)
+            for valor in atributoElegido[1]:
+                ramas[valor] = entrenador(subconjuntoValorAtributo(conjunto,indices[atributoElegido[0]],valor),medida,maxFrecuencia,minEjemplos,atributosCopia,indices)
+            arbol = NodoDT(indices[atributoElegido[0]],proporcionClases,ramas,None)
+    return arbol
