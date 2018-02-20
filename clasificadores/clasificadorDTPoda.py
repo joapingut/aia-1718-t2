@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from clasificadores.clasificadorDT import clasificador, evaluador, imprimir
+from clasificadores.clasificadorDT import clasificador, evaluador, imprimir, entrenador
 from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
 
 '''ClasificadorDTPoda es subclase de Clasificador, a lo que se añade
@@ -42,4 +42,11 @@ class ClasificadorDTPoda(Clasificador):
             return ClasificadorNoEntrenado(Exception)
         
 def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, validacion=None):
-    None
+    arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos)
+    return entrenadorPodaRec(arbol,validacion,rendimiento=0.0)
+
+def entrenadorPodaRec(arbol, validacion, rendimiendo):
+    
+    #if arbol.ramas != None:
+    return None
+    
