@@ -21,7 +21,7 @@ class ClasificadorDTPoda(Clasificador):
         self.maxima_frecuencia = maxima_frecuencia
         self.minimo_ejemplos = minimo_ejemplos
         self.validacion = validacion
-        self.arbol = entrenadorPoda(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.validacion)
+        self.arbol = entrenadorPoda(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.validacion,self.atributos)
         self.entrenado = True
     
     def clasifica(self, ejemplo):
@@ -42,9 +42,9 @@ class ClasificadorDTPoda(Clasificador):
         else:
             return ClasificadorNoEntrenado(Exception)
         
-def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, validacion=None):
+def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, validacion=None,atributos):
     arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos)
-    return entrenadorPodaRec(arbol,validacion)
+    return entrenadorPodaRec(arbol,validacion,atributos)
 
 '''El entrenadorPodaRec coge todos los posibles caminos a los nodos interiores, 
 los reordena de mayor a menor tamaño, cambia el último nodo de cada camino a uno hoja, 
