@@ -130,9 +130,9 @@ vez finalizado el bucle, se devuelve el número de aciertos dividido entre
 def evaluador(prueba,arbol):
     aciertos = 0
     for ejemplo in prueba:
-        copiaEjemplo = ejemplo
-        copiaEjemplo.pop()
-        if clasificador(copiaEjemplo,arbol) == ejemplo[len(ejemplo)-1]:
+        copiaEjemplo = list(ejemplo)
+        clase = copiaEjemplo.pop()
+        if clasificador(copiaEjemplo,arbol) == clase:
             aciertos += 1
     return aciertos/len(prueba)
 
@@ -144,20 +144,20 @@ de una indentación que depende de la profundidad para una representación
 más clara de las ramas. Si el nodo que se trata no tiene ramas, es un nodo
 hoja y se representa el valor de clasificación.'''
 
-def imprimirRec(arbol,profundidad):
+def imprimirRec(arbol,atributos,profundidad):
     resultado = ""
     if arbol.ramas != None:
         for rama in arbol.ramas:
-            resultado += "\t"*profundidad+str(profundidad)+": "+str(rama)+"\n"+imprimirRec(arbol.ramas[rama],profundidad+1)
+            resultado += "\n"+"\t"*profundidad+atributos[arbol.atributo][0]+": ("+str(rama)+")"+imprimirRec(arbol.ramas[rama],atributos,profundidad+1)
     else:
-        resultado = "\t"*profundidad+str(profundidad)+": ["+arbol.clase+"]\n"
+        resultado = " -> ["+arbol.clase+"]\n"
     return resultado
 
 '''La función imprimir llama a imprimirRec, genera la cadena del árbol
 y la imprime.'''
 
-def imprimir(arbol,profundidad=0):
-    arbolRes = imprimirRec(arbol,profundidad)
+def imprimir(arbol,atributos,profundidad=0):
+    arbolRes = imprimirRec(arbol,atributos,profundidad)
     print(arbolRes)
 
 '''La función entrenador desarrolla el árbol de manera recursiva llamando
