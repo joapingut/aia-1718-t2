@@ -15,7 +15,7 @@ class ClasificadorDTPoda(Clasificador):
         super().__init__(clasificacion, clases, atributos)
         self.entrenado = False
         
-    def entrena(self, entrenamiento, medida="entropia", maxima_frecuencia=1, minimo_ejemplos=0, validacion=None):
+    def entrena(self, entrenamiento, validacion=None ,medida="entropia", maxima_frecuencia=1, minimo_ejemplos=0):
         self.entrenamiento = entrenamiento
         self.medida = medida
         self.maxima_frecuencia = maxima_frecuencia
@@ -38,12 +38,12 @@ class ClasificadorDTPoda(Clasificador):
     
     def imprime(self):
         if self.entrenado:
-            return imprimir(self.arbol)
+            return imprimir(self.arbol,self.atributos)
         else:
             return ClasificadorNoEntrenado(Exception)
         
-def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, validacion=None,atributos):
-    arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos)
+def entrenadorPoda(conjunto, medida, maxFrecuencia, minEjemplos, validacion,atributos):
+    arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos,atributos)
     return entrenadorPodaRec(arbol,validacion,atributos)
 
 '''El entrenadorPodaRec coge todos los posibles caminos a los nodos interiores, 
