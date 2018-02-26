@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 from clasificadores.clasificadorDT import clasificador, evaluador, imprimir, entrenador
 from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
 
@@ -45,8 +46,45 @@ def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, 
     arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos)
     return entrenadorPodaRec(arbol,validacion,rendimiento=0.0)
 
+'''idea: coger los caminos, reordenarlos de mayor a menor, crear un nuevo
+arbol con cada camino, si el arbol es mejor que el anterior, se vuelven
+a coger los caminos y asi continuamente hasta que la lista de caminos sea
+0'''
+
 def entrenadorPodaRec(arbol, validacion, rendimiendo):
+    arbolFinal = copy.deepcopy(arbol)
+    
+    if arbolFinal.ramas != None:
+        x = arbolFinal.ramas
+        for rama in x:
+            if x[rama].ramas == None:
+                None
+            else:
+                x = x[rama].ramas
     
     #if arbol.ramas != None:
-    return None
-    
+    return arbolFinal
+
+'''La función nodosInterioresRec devuelve una lista de listas de cada
+camino que se puede formar en el árbol con los nodos interiores hasta
+los nodos hoja.'''
+
+def nodosInterioresRec(arbol,ramasNodo=None):
+    res = list()
+    if arbol.ramas != None:
+        for rama in arbol.ramas:
+            if ramasNodo == None:
+                resAux = list()
+            else:
+                resAux = list(ramasNodo)
+            resAux.append(rama)
+            res.append(resAux)
+            siguienteNodo = nodosInterioresRec(arbol.ramas[rama],resAux)
+            if siguienteNodo != None:
+                resAux = list()
+                for x in siguienteNodo:
+                    resAux.append(x)
+                res = res + resAux
+        return res
+    else:
+        return None
