@@ -47,8 +47,8 @@ def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, 
     return entrenadorPodaRec(arbol,validacion)
 
 '''El entrenadorPodaRec coge todos los posibles caminos a los nodos interiores, 
-los reordenar de mayor a menor, cambia el último nodo de cada camino, 
-crea un nuevo árbol, si el árbol tiene mejor rendimiento que el anterior, se vuelven
+los reordena de mayor a menor tamaño, cambia el último nodo de cada camino a uno hoja, 
+crea un nuevo árbol y, si el árbol tiene mejor rendimiento que el anterior, se vuelven
 a coger los caminos para este nuevo árbol y así continuamente hasta que se recorran
 todos los caminos sin encontrar un mejor árbol.'''
 
