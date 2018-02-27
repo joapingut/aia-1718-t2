@@ -35,7 +35,7 @@ class ClasificadorDT(Clasificador):
     
     def imprime(self):
         if self.entrenado:
-            return imprimir(self.arbol)
+            return imprimir(self.arbol,self.atributos)
         else:
             return ClasificadorNoEntrenado(Exception)
 
@@ -172,15 +172,19 @@ de entrada y se observa el mejor valor dependiendo de la medida, cogiendo el mí
 Es en ese bucle donde se realiza la comprobación de la máxima frecuencia y el mínimo
 de ejemplos, en la cual si se cumple alguna, no se elige el atributo candidato'''
 
-def entrenador(conjunto, medida, maxFrecuencia, minEjemplos, atributos, indices=None):
+def entrenador(conjunto, medida, maxFrecuencia, minEjemplos, atributos, indices=None, claseMax=None):
     if indices == None:
         indices = indiceAtributo(atributos)
     valorMin = 100.0
     atributosCopia = list(atributos)
     proporcionClases = proporcionClase(conjunto)
     atributoElegido = None
-    if len(proporcionClases) == 1 or indices == {} or atributosCopia == []:
-        arbol = NodoDT(None,proporcionClases,None,max(proporcionClases,key=proporcionClases.get))
+    if len(proporcionClases) == 1 or indices == {} or atributosCopia == [] or len(conjunto) == 0:
+        if proporcionClases == {}:
+            arbol = NodoDT(None,proporcionClases,None,max(claseMax,key=claseMax.get))
+        else:    
+            arbol = NodoDT(None,proporcionClases,None,max(proporcionClases,key=proporcionClases.get))
+        
     else:
         ramas = dict()
         for atributo in atributosCopia:
@@ -192,14 +196,15 @@ def entrenador(conjunto, medida, maxFrecuencia, minEjemplos, atributos, indices=
                 medidaValor = medidaValor + medidas(medida,subconjunto)
                 medidaValor = medidaValor*len(subconjunto)/len(conjunto)
                 proporcionClaseSub = proporcionClase(subconjunto,True)
-                if medidaValor <= valorMin and proporcionClaseSub[max(proporcionClaseSub,key=proporcionClaseSub.get)] <= maxFrecuencia and len(subconjunto)/len(conjunto) >= minEjemplos:
-                    atributoElegido = atributo
-                    valorMin = medidaValor
+                if proporcionClaseSub != {}:
+                    if medidaValor <= valorMin and proporcionClaseSub[max(proporcionClaseSub,key=proporcionClaseSub.get)] <= maxFrecuencia and len(subconjunto)/len(conjunto) >= minEjemplos:
+                        atributoElegido = atributo
+                        valorMin = medidaValor
         if atributoElegido == None:
             arbol = NodoDT(None,proporcionClases,None,max(proporcionClases,key=proporcionClases.get))
         else:
             atributosCopia.remove(atributoElegido)
             for valor in atributoElegido[1]:
-                ramas[valor] = entrenador(subconjuntoValorAtributo(conjunto,indices[atributoElegido[0]],valor),medida,maxFrecuencia,minEjemplos,atributosCopia,indices)
+                ramas[valor] = entrenador(subconjuntoValorAtributo(conjunto,indices[atributoElegido[0]],valor),medida,maxFrecuencia,minEjemplos,atributosCopia,indices,proporcionClases)
             arbol = NodoDT(indices[atributoElegido[0]],proporcionClases,ramas,None)
     return arbol

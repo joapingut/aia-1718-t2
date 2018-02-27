@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import copy
 from clasificadores.clasificadorDT import clasificador, evaluador, imprimir, entrenador
-from clasificadores.clasificador import Clasificador, NodoDT, ClasificadorNoEntrenado
+from clasificadores.clasificador import Clasificador, ClasificadorNoEntrenado
 
 '''ClasificadorDTPoda es subclase de Clasificador, a lo que se añade
 un campo entrenado que indica si el entrenamiento se ha realizado,
@@ -15,13 +15,13 @@ class ClasificadorDTPoda(Clasificador):
         super().__init__(clasificacion, clases, atributos)
         self.entrenado = False
         
-    def entrena(self, entrenamiento, medida="entropia", maxima_frecuencia=1, minimo_ejemplos=0, validacion=None):
+    def entrena(self, entrenamiento, validacion=None ,medida="entropia", maxima_frecuencia=1, minimo_ejemplos=0):
         self.entrenamiento = entrenamiento
         self.medida = medida
         self.maxima_frecuencia = maxima_frecuencia
         self.minimo_ejemplos = minimo_ejemplos
         self.validacion = validacion
-        self.arbol = entrenadorPoda(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.validacion)
+        self.arbol = entrenadorPoda(self.entrenamiento,self.medida,self.maxima_frecuencia,self.minimo_ejemplos,self.validacion,self.atributos)
         self.entrenado = True
     
     def clasifica(self, ejemplo):
@@ -38,31 +38,41 @@ class ClasificadorDTPoda(Clasificador):
     
     def imprime(self):
         if self.entrenado:
-            return imprimir(self.arbol)
+            return imprimir(self.arbol,self.atributos)
         else:
             return ClasificadorNoEntrenado(Exception)
         
-def entrenadorPoda(conjunto, medida="entropia", maxFrecuencia=1, minEjemplos=0, validacion=None):
-    arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos)
-    return entrenadorPodaRec(arbol,validacion,rendimiento=0.0)
+def entrenadorPoda(conjunto, medida, maxFrecuencia, minEjemplos, validacion,atributos):
+    arbol = entrenador(conjunto, medida, maxFrecuencia, minEjemplos,atributos)
+    return entrenadorPodaRec(arbol,validacion,atributos)
 
-'''idea: coger los caminos, reordenarlos de mayor a menor, crear un nuevo
-arbol con cada camino, si el arbol es mejor que el anterior, se vuelven
-a coger los caminos y asi continuamente hasta que la lista de caminos sea
-0'''
+'''El entrenadorPodaRec coge todos los posibles caminos a los nodos interiores, 
+los reordena de mayor a menor tamaño, cambia el último nodo de cada camino a uno hoja, 
+crea un nuevo árbol y, si el árbol tiene mejor rendimiento que el anterior, se vuelven
+a coger los caminos para este nuevo árbol y así continuamente hasta que se recorran
+todos los caminos sin encontrar un mejor árbol.'''
 
-def entrenadorPodaRec(arbol, validacion, rendimiendo):
-    arbolFinal = copy.deepcopy(arbol)
+def entrenadorPodaRec(arbol, validacion,atributos,rendimiento=0.0):
+    arbolCopia = copy.deepcopy(arbol)
+    caminos = nodosInterioresRec(arbolCopia)
+    caminos = caminosATratar(arbolCopia,caminos)
+    caminos.sort(key = len, reverse = True)
+
+    for camino in caminos:
+        arbolCandidato = copy.deepcopy(arbolCopia)
+        ultimoN = ultimoNodo(arbolCandidato,camino)
+        ultimoN.atributo = None
+        ultimoN.clase = max(ultimoN.distr,key=ultimoN.distr.get)
+        ultimoN.ramas = None
+        rendimientoCandidato = evaluador(validacion,arbolCandidato)
+        if rendimientoCandidato >= rendimiento:
+            arbolFinal = copy.deepcopy(arbolCandidato)
+            arbolCopia = copy.deepcopy(arbolCandidato)
+            caminos = nodosInterioresRec(arbolFinal)
+            caminos = caminosATratar(arbolFinal,caminos)
+            caminos.sort(key = len, reverse = True)
+            rendimiento = rendimientoCandidato
     
-    if arbolFinal.ramas != None:
-        x = arbolFinal.ramas
-        for rama in x:
-            if x[rama].ramas == None:
-                None
-            else:
-                x = x[rama].ramas
-    
-    #if arbol.ramas != None:
     return arbolFinal
 
 '''La función nodosInterioresRec devuelve una lista de listas de cada
@@ -88,3 +98,45 @@ def nodosInterioresRec(arbol,ramasNodo=None):
         return res
     else:
         return None
+
+'''La función caminosATratar recorre todos los caminos posibles del árbol
+y los procesa para solo quedarnos con los caminos a los nodos interiores
+para podar.'''
+
+def caminosATratar(arbol,caminos):
+    caminosCopia = list(caminos)
+    for camino in caminos:
+        if comprobarCamino(arbol,camino) != None:
+            caminosCopia.remove(camino)
+    return caminosCopia
+
+'''La función comprobarCamino comprueba si un camino del árbol lleva a un nodo
+hoja o no.'''
+
+def comprobarCamino(arbol,camino):
+    arbolCopia = copy.deepcopy(arbol)
+    for indice in range(len(camino)):
+        if indice != len(camino):
+            rama = arbolCopia.ramas[camino[indice]]
+            if comprobarNodo(rama):
+                return rama.clase
+            arbolCopia = rama
+
+'''La función comprobarNodo devuelve un booleano dependiendo de si tiene un
+valor de clase o no. Comprueba si un nodo es hoja o interior.'''            
+
+def comprobarNodo(arbol):
+    if arbol.clase == None:
+        return False
+    else:
+        return True
+
+'''La función ultimoNodo devuelve el último nodo de un camino del árbol
+hacia un nodo interior.'''
+
+def ultimoNodo(arbol,camino):
+    for indice in range(len(camino)):
+        if indice != len(camino):
+            rama = arbol.ramas[camino[indice]]
+            arbol = rama
+    return arbol
