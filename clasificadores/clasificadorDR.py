@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from os import access
 
 from clasificadores.clasificador import Clasificador, ClasificadorNoEntrenado
 from clasificadores.utils import proporcionClase, ejemplosClase
@@ -16,24 +17,29 @@ class ClasificadorDR(Clasificador):
 
     def entrena(self, entrenamiento):
         self.entrenamiento = entrenamiento
-        self.arbol = entrenador(self.entrenamiento)
+        self.reglas = entrenador(self.entrenamiento, self.atributos)
         self.entrenado = True
 
     def clasifica(self, ejemplo):
         if self.entrenado:
-            return clasificador(ejemplo,self.arbol)
+            return clasificador(ejemplo,self.reglas)
         else:
             return ClasificadorNoEntrenado(Exception)
 
     def evalua(self, prueba):
         if self.entrenado:
-            return evaluador(prueba,self.arbol)
+            aciertos = 0;
+            for instancia in prueba:
+                evaluacion = evaluador(instancia,self.reglas)
+                if evaluacion == instancia[-1]:
+                    aciertos += 1
+            return  aciertos / len(prueba)
         else:
             return ClasificadorNoEntrenado(Exception)
 
     def imprime(self):
         if self.entrenado:
-            return imprimir(self.arbol)
+            return imprimir(self.reglas)
         else:
             return ClasificadorNoEntrenado(Exception)
 
@@ -53,7 +59,7 @@ class ReglaDR():
         return self.categoria
 
     ''' Ejemplo de elemento ['n','s','n','s','s','s','n','n','n','s','?','s','s','s','n','s','republicano']'''
-    def evalutate(self, elemento, positivo=True):
+    def evaluate(self, elemento, positivo=False):
         clase = elemento[-1]
         if positivo and self.categoria != clase:
             return False
@@ -68,14 +74,14 @@ class ReglaDR():
     def getCountPositivos(self, conjunto):
         count = 0
         for elemento in conjunto:
-            if self.evalutate(elemento, True):
+            if self.evaluate(elemento, True):
                 count += 1
         return count
 
     def getCountValidos(self, conjunto):
         count = 0
         for elemento in conjunto:
-            if self.evalutate(elemento, False):
+            if self.evaluate(elemento, False):
                 count += 1
         return count
 
@@ -99,21 +105,28 @@ def entrena_clase(clase, entrenamiento, atributos):
     while len(ejemplos) > 0:
         rule = ReglaDR(clase)
         rule = entrena_regla(rule, ejemplos, atributos)
-        rules.append(rule)
+        if len(rule.getRules()) > 0:
+            rules.append(rule)
         ejemplos = removeCubiertos(ejemplos, rule)
     return rules
 
 def entrena_regla(rule, entrenamiento, atributos):
     cubiertos = entrenamiento
-    while rule.getFrecuenciaRelativa(cubiertos) > 0 and rule.getFrecuenciaRelativa(cubiertos) < 1:
-        rule = ampliar_regla(rule, atributos, cubiertos)
+    attr_used = set()
+    while len(attr_used) < len(atributos) and rule.getFrecuenciaRelativa(cubiertos) > 0 and rule.getFrecuenciaRelativa(cubiertos) < 1:
+        rule = ampliar_regla(rule, atributos, cubiertos, attr_used)
         cubiertos = removeNoCubiertos(cubiertos, rule)
     return rule
 
-def ampliar_regla(regla, atributos, entrenamiento):
+def ampliar_regla(regla, atributos, entrenamiento, attr_used):
     sorted_atributes = proporcionAtributos(regla, atributos, entrenamiento)
-    nuevo = (sorted_atributes[0][0], sorted_atributes[0][1])
-    regla.addRule(nuevo)
+    for i in range(0, len(sorted_atributes)):
+        if not(sorted_atributes[i][0] in attr_used):
+            nuevo = (sorted_atributes[i][0], sorted_atributes[i][1])
+            regla.addRule(nuevo)
+            print("Frecuencia relativa rule: ", regla, regla.getFrecuenciaRelativa(entrenamiento))
+            attr_used.add(sorted_atributes[i][0])
+            break
     return regla
 
 def proporcionAtributos(regla, atributos, entrenamiento):
@@ -137,14 +150,14 @@ def proporcionAtributos(regla, atributos, entrenamiento):
 def removeNoCubiertos(elementos, regla):
     cubiertos = []
     for elemento in elementos:
-        if regla.evalutate(elemento, positivo=False):
+        if regla.evaluate(elemento, positivo=False):
             cubiertos.append(elemento)
     return cubiertos
 
 def removeCubiertos(elementos, regla):
     noCubiertos = []
     for elemento in elementos:
-        if not regla.evalutate(elemento, positivo=False):
+        if not regla.evaluate(elemento, positivo=False):
             noCubiertos.append(elemento)
     return noCubiertos
 
@@ -161,10 +174,13 @@ def getDictOfExamples(conjunto, clases):
     return result
 
 def clasificador(ejemplo, reglas):
-    None
+    return evaluador(ejemplo, reglas)
 
 def evaluador(prueba, reglas):
-    None
+    for regla in reglas:
+        if regla.evaluate(prueba):
+            return regla.getCategoria()
+    return None
 
 def imprimir(reglas):
     None
