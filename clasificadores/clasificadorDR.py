@@ -150,7 +150,7 @@ def entrena_regla(rule, entrenamiento, atributos):
     y a la proporcion de los mismos siendo preferente los que clasifican menos ejemplos (los mas concretos)
     y de ahí pasamos a los mas generales. '''
 def ampliar_regla(regla, atributos, entrenamiento, attr_used):
-    sorted_atributes = proporcionAtributos(regla, atributos, entrenamiento)
+    sorted_atributes = ordena_por_elementos(proporcionAtributos(regla, atributos, entrenamiento))
     for i in range(0, len(sorted_atributes)):
         if not(sorted_atributes[i][0] in attr_used):
             nuevo = (sorted_atributes[i][0], sorted_atributes[i][1])
@@ -182,6 +182,22 @@ def proporcionAtributos(regla, atributos, entrenamiento):
                 resultado.append((i, valor, cumplen/total, cumplen))
         i += 1
     return sorted(resultado, key=operator.itemgetter(2), reverse=True)
+
+''' Funcion para ordernar una lista de elementos por numero de instancias clasificadas correctamente.
+    Se usa con la salida de la funcion proporcionAtributos. Si dos elementos tiene la misma C se pone primero
+    el que tenga mayor D.
+'''
+def ordena_por_elementos(conjunto):
+    if conjunto == None or len(conjunto) < 2:
+        return conjunto
+    for i in range(0, len(conjunto) - 1):
+        elemento = conjunto[i]
+        siguiente = conjunto[i + 1]
+        if elemento[2] == siguiente[2]:
+            if elemento[3] < siguiente[3]:
+                conjunto[i] = siguiente
+                conjunto[i + 1] = elemento
+    return conjunto
 
 ''' Metodo que dado un conjunto de instancias y una regla elimina del conjunto los que no esten
     cubiertos por dicha regla (no la cumplen). '''
