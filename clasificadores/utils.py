@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__auth = ''
-
 '''Devuelve el nº de clases de los ejemplos del conjunto
 que se pasa como parámetro de entrada. Ejemplo de salida
 de la función: {'0':519, '1':264}. El parámetro de entrada

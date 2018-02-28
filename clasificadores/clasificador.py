@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-__aut = ''
 
 '''
 Clasificador es la clase básica que describe un clasificador sobre la que se implementaran el resto de clasificadores.
